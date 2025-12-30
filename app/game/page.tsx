@@ -2,17 +2,20 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useGameState } from "@/hooks/useGameState";
+import { useSound } from "@/hooks/useSound";
 import { GameMode } from "@/types/game";
 import GameBoard from "@/components/GameBoard";
 import GameHeader from "@/components/GameHeader";
 import GameControls from "@/components/GameControls";
+import SoundToggle from "@/components/SoundToggle";
 
 export default function GamePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mode = (searchParams.get("mode") as GameMode) || GameMode.LOCAL;
 
-  const { gameInfo, handleMove, resetGame, getHint } = useGameState(mode);
+  const { playSound, isMuted, toggleMute } = useSound();
+  const { gameInfo, handleMove, resetGame, getHint } = useGameState(mode, playSound);
 
   const handleBackToMenu = () => {
     router.push("/");
@@ -32,6 +35,8 @@ export default function GamePage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <SoundToggle isMuted={isMuted} onToggle={toggleMute} />
+
       <GameHeader
         gameState={gameInfo.gameState}
         currentPlayer={gameInfo.currentPlayer}
@@ -52,6 +57,7 @@ export default function GamePage() {
         onBackToMenu={handleBackToMenu}
         onHint={handleHint}
         onViewHistory={handleViewHistory}
+        onButtonClick={() => playSound("click")}
       />
 
       <div className="mt-4 sm:mt-5 md:mt-6 text-xs sm:text-sm text-gray-400">
