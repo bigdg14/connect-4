@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  mode        String   // "local", "ai_easy", "ai_hard", "online"
+  winner      Int?     // 0 = draw, 1 = player 1, 2 = player 2
+  moves       Move[]
+  duration    Int?     // Game duration in seconds
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  // Online game specific fields
+  player1Id   String?
+  player2Id   String?
+  roomCode    String?
+
+  @@index([createdAt])
+  @@index([roomCode])
+}
+
+model Move {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  column    Int      // 0-6 for Connect 4
+  player    Int      // 1 or 2
+  moveNumber Int     // Sequential move number starting at 1
+  createdAt DateTime @default(now())
+
+  @@index([gameId])
+}
+
+model Statistics {
+  id              String   @id @default(cuid())
+  playerId        String   @unique
+  gamesPlayed     Int      @default(0)
+  gamesWon        Int      @default(0)
+  gamesLost       Int      @default(0)
+  gamesDraw       Int      @default(0)
+  aiEasyWins      Int      @default(0)
+  aiHardWins      Int      @default(0)
+  longestWinStreak Int     @default(0)
+  currentWinStreak Int     @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@index([playerId])
+}

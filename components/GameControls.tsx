@@ -9,6 +9,7 @@ interface GameControlsProps {
   onNewGame: () => void;
   onBackToMenu: () => void;
   onHint?: () => void;
+  onViewHistory?: () => void;
 }
 
 export default function GameControls({
@@ -17,6 +18,7 @@ export default function GameControls({
   onNewGame,
   onBackToMenu,
   onHint,
+  onViewHistory,
 }: GameControlsProps) {
   const showHint = gameMode !== GameMode.LOCAL && gameState === GameState.PLAYING;
 
@@ -39,6 +41,15 @@ export default function GameControls({
           className="px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 active:from-purple-700 active:to-purple-800 text-white text-sm sm:text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
         >
           Hint
+        </button>
+      )}
+
+      {onViewHistory && (
+        <button
+          onClick={onViewHistory}
+          className="px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:from-blue-700 active:to-blue-800 text-white text-sm sm:text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+        >
+          History
         </button>
       )}
 

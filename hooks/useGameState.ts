@@ -28,6 +28,33 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
   const [winningLine, setWinningLine] = useState<WinningLine | null>(null);
   const [moveHistory, setMoveHistory] = useState<Position[]>([]);
   const [gameMode] = useState<GameMode>(mode);
+  const [gameStartTime] = useState<number>(Date.now());
+
+  const saveGame = useCallback(
+    async (finalWinner: Player, finalMoveHistory: Position[]) => {
+      try {
+        const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+        const moves = finalMoveHistory.map((position, index) => ({
+          column: position.col,
+          player: index % 2 === 0 ? Player.PLAYER_1 : Player.PLAYER_2,
+        }));
+
+        await fetch("/api/games", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: gameMode,
+            winner: finalWinner,
+            moves,
+            duration,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save game:", error);
+      }
+    },
+    [gameMode, gameStartTime]
+  );
 
   const resetGame = useCallback(() => {
     setBoard(createEmptyBoard());
@@ -46,6 +73,7 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
       if (!result) return false;
 
       const { board: newBoard, position } = result;
+      const newMoveHistory = [...moveHistory, position];
 
       // Check for winner
       const winLine = checkWinner(newBoard, position);
@@ -54,7 +82,8 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
         setGameState(GameState.WIN);
         setWinner(currentPlayer);
         setWinningLine(winLine);
-        setMoveHistory([...moveHistory, position]);
+        setMoveHistory(newMoveHistory);
+        saveGame(currentPlayer, newMoveHistory);
         return true;
       }
 
@@ -62,17 +91,18 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
       if (isBoardFull(newBoard)) {
         setBoard(newBoard);
         setGameState(GameState.DRAW);
-        setMoveHistory([...moveHistory, position]);
+        setMoveHistory(newMoveHistory);
+        saveGame(Player.NONE, newMoveHistory);
         return true;
       }
 
       // Continue game
       setBoard(newBoard);
       setCurrentPlayer(getNextPlayer(currentPlayer));
-      setMoveHistory([...moveHistory, position]);
+      setMoveHistory(newMoveHistory);
       return true;
     },
-    [board, currentPlayer, gameState, moveHistory]
+    [board, currentPlayer, gameState, moveHistory, saveGame]
   );
 
   const getHint = useCallback((): number => {
