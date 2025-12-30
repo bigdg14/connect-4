@@ -19,8 +19,12 @@ import {
   getRandomMove,
 } from "@/lib/gameLogic";
 import { getAIMove } from "@/lib/ai";
+import { SoundType } from "./useSound";
 
-export function useGameState(mode: GameMode = GameMode.LOCAL) {
+export function useGameState(
+  mode: GameMode = GameMode.LOCAL,
+  playSound?: (sound: SoundType) => void
+) {
   const [board, setBoard] = useState<Board>(createEmptyBoard());
   const [currentPlayer, setCurrentPlayer] = useState<Player>(Player.PLAYER_1);
   const [gameState, setGameState] = useState<GameState>(GameState.PLAYING);
@@ -75,6 +79,9 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
       const { board: newBoard, position } = result;
       const newMoveHistory = [...moveHistory, position];
 
+      // Play drop sound
+      playSound?.("drop");
+
       // Check for winner
       const winLine = checkWinner(newBoard, position);
       if (winLine) {
@@ -84,6 +91,8 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
         setWinningLine(winLine);
         setMoveHistory(newMoveHistory);
         saveGame(currentPlayer, newMoveHistory);
+        // Play win sound after a short delay
+        setTimeout(() => playSound?.("win"), 300);
         return true;
       }
 
@@ -93,6 +102,8 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
         setGameState(GameState.DRAW);
         setMoveHistory(newMoveHistory);
         saveGame(Player.NONE, newMoveHistory);
+        // Play draw sound after a short delay
+        setTimeout(() => playSound?.("draw"), 300);
         return true;
       }
 
@@ -102,7 +113,7 @@ export function useGameState(mode: GameMode = GameMode.LOCAL) {
       setMoveHistory(newMoveHistory);
       return true;
     },
-    [board, currentPlayer, gameState, moveHistory, saveGame]
+    [board, currentPlayer, gameState, moveHistory, saveGame, playSound]
   );
 
   const getHint = useCallback((): number => {
