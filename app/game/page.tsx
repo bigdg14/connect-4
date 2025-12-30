@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useGameState } from "@/hooks/useGameState";
 import { useSound } from "@/hooks/useSound";
@@ -9,7 +10,7 @@ import GameHeader from "@/components/GameHeader";
 import GameControls from "@/components/GameControls";
 import SoundToggle from "@/components/SoundToggle";
 
-export default function GamePage() {
+function GameContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mode = (searchParams.get("mode") as GameMode) || GameMode.LOCAL;
@@ -64,5 +65,17 @@ export default function GamePage() {
         Mode: {mode.replace("_", " ").toUpperCase()}
       </div>
     </main>
+  );
+}
+
+export default function GamePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-white text-xl">Loading game...</div>
+      </div>
+    }>
+      <GameContent />
+    </Suspense>
   );
 }
