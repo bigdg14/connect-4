@@ -18,6 +18,10 @@ export default function GamePage() {
     router.push("/");
   };
 
+  const handleViewHistory = () => {
+    router.push("/history");
+  };
+
   const handleHint = () => {
     const hintCol = getHint();
     if (hintCol !== -1) {
@@ -47,6 +51,7 @@ export default function GamePage() {
         onNewGame={resetGame}
         onBackToMenu={handleBackToMenu}
         onHint={handleHint}
+        onViewHistory={handleViewHistory}
       />
 
       <div className="mt-4 sm:mt-5 md:mt-6 text-xs sm:text-sm text-gray-400">
